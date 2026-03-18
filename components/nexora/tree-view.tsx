@@ -2,10 +2,24 @@
 
 import React, { useState, useMemo } from "react"
 import { ChevronRight, ChevronDown, FileText, Folder, FolderOpen, Code, Settings, Database } from "lucide-react"
-import { cn } from "@/lib/utils"
-import type { FileNode } from "@/lib/types"
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
+export interface FileNode {
+  id: string
+  name: string
+  type: "file" | "folder"
+  content?: string
+  language?: string
+  children?: FileNode[]
+  path: string
+}
 
 interface TreeViewProps {
   files: FileNode[]

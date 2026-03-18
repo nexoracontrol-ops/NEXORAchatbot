@@ -2,10 +2,22 @@
 
 import React, { useRef, useEffect, useState } from "react"
 import { Terminal, Trash2, Download, Pause, Play, Filter } from "lucide-react"
-import { cn } from "@/lib/utils"
-import type { LogEntry } from "@/lib/types"
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
+export interface LogEntry {
+  id: string
+  time: string
+  type: "INFO" | "WARN" | "ERROR" | "DEBUG" | "SUCCESS"
+  message: string
+  source?: string
+}
 import {
   DropdownMenu,
   DropdownMenuContent,

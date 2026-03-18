@@ -2,8 +2,13 @@
 
 import React from "react"
 import { Cpu, MemoryStick, Activity, Wifi, Clock, Layers } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
 import { Progress } from "@/components/ui/progress"
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 

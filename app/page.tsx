@@ -3,14 +3,166 @@
 import React, { useState, useCallback, useEffect } from "react"
 import { Moon, Sun, Settings, Bell, Github } from "lucide-react"
 import { useTheme } from "next-themes"
-import { TreeView } from "@/components/nexora/tree-view"
+import { TreeView, type FileNode } from "@/components/nexora/tree-view"
 import { CodeEditor } from "@/components/nexora/code-editor"
-import { LogConsole } from "@/components/nexora/log-console"
+import { LogConsole, type LogEntry } from "@/components/nexora/log-console"
 import { InspectorPanel } from "@/components/nexora/inspector-panel"
 import { Button } from "@/components/ui/button"
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { defaultFileTree, type FileNode, type LogEntry } from "@/lib/types"
+
+const defaultFileTree: FileNode[] = [
+  {
+    id: "1",
+    name: "nexora",
+    type: "folder",
+    path: "/nexora",
+    children: [
+      {
+        id: "2",
+        name: "agents",
+        type: "folder",
+        path: "/nexora/agents",
+        children: [
+          {
+            id: "3",
+            name: "MainAgent.kt",
+            type: "file",
+            path: "/nexora/agents/MainAgent.kt",
+            language: "kotlin",
+            content: `// NEXORA Main Agent
+class MainAgent : Agent() {
+    private val runtime = AgentRuntime()
+    
+    override fun onCreate() {
+        super.onCreate()
+        runtime.initialize()
+        log("MainAgent initialized")
+    }
+    
+    fun processCommand(cmd: String): Result {
+        return when(cmd) {
+            "status" -> getSystemStatus()
+            "sync" -> syncWithCloud()
+            else -> Result.Unknown
+        }
+    }
+    
+    private fun getSystemStatus(): Result {
+        return Result.Success(
+            mapOf(
+                "cpu" to getCpuUsage(),
+                "memory" to getMemoryUsage(),
+                "agents" to getActiveAgents()
+            )
+        )
+    }
+}`
+          },
+          {
+            id: "4",
+            name: "SyncAgent.kt",
+            type: "file",
+            path: "/nexora/agents/SyncAgent.kt",
+            language: "kotlin",
+            content: `// NEXORA Sync Agent - Hot Reload Handler
+class SyncAgent : Service() {
+    private val redis = RedisClient.create()
+    
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        subscribeToUpdates()
+        return START_STICKY
+    }
+    
+    private fun subscribeToUpdates() {
+        redis.connectPubSub().apply {
+            addListener(SyncListener())
+            async().subscribe("nexora_updates")
+        }
+    }
+    
+    inner class SyncListener : RedisPubSubListener<String, String> {
+        override fun message(channel: String?, message: String?) {
+            message?.let { fileName ->
+                val content = redis.connect().sync().get("agent:$fileName")
+                saveToSandbox(fileName, content)
+                notifyHotReload(fileName)
+            }
+        }
+    }
+}`
+          }
+        ]
+      },
+      {
+        id: "5",
+        name: "config",
+        type: "folder",
+        path: "/nexora/config",
+        children: [
+          {
+            id: "6",
+            name: "settings.json",
+            type: "file",
+            path: "/nexora/config/settings.json",
+            language: "json",
+            content: `{
+  "nexora": {
+    "version": "1.0.0",
+    "environment": "development",
+    "features": {
+      "hotReload": true,
+      "autoSync": true,
+      "debugMode": true
+    },
+    "redis": {
+      "host": "localhost",
+      "port": 6379,
+      "channel": "nexora_updates"
+    },
+    "ai": {
+      "provider": "claude",
+      "model": "claude-opus-4.6",
+      "maxTokens": 4096
+    }
+  }
+}`
+          }
+        ]
+      },
+      {
+        id: "7",
+        name: "ui",
+        type: "folder",
+        path: "/nexora/ui",
+        children: [
+          {
+            id: "8",
+            name: "Dashboard.tsx",
+            type: "file",
+            path: "/nexora/ui/Dashboard.tsx",
+            language: "typescript",
+            content: `// NEXORA Dashboard Component
+import React from 'react';
+import { TreeView } from './TreeView';
+import { CodeEditor } from './CodeEditor';
+import { LogConsole } from './LogConsole';
+
+export function Dashboard() {
+  return (
+    <div className="flex h-screen">
+      <TreeView />
+      <CodeEditor />
+      <LogConsole />
+    </div>
+  );
+}`
+          }
+        ]
+      }
+    ]
+  }
+]
 
 // Generate unique ID
 const generateId = () => Math.random().toString(36).substring(2, 9)
