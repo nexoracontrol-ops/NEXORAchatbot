@@ -1,12 +1,10 @@
 "use client"
 
 import React, { useRef, useEffect, useState } from "react"
-import { Save, Upload, X, RefreshCw } from "lucide-react"
+import { Save, X, RefreshCw } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { FileNode } from "@/lib/types"
 import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface CodeEditorProps {
   file: FileNode | null
